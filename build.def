@@ -1,0 +1,24 @@
+# Install build tools
+Bootstrap: localimage
+From: openmpi.sif
+
+%files
+    scripts/cmake.sh /opt/
+
+%post
+
+    # Note: Python 3 is needed to configure PETSc.
+    yum -y install \
+       gcc \
+       gcc-c++ \
+       gcc-gfortran \
+       make \
+       git \
+       wget \
+       m4 \
+       python3 \
+       ;
+
+    # Install CMake (the version in CentOS 7 is too old)
+    yum -y install openssl-devel
+    bash -e /opt/cmake.sh

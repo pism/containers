@@ -1,0 +1,16 @@
+# Install PETSc
+Bootstrap: localimage
+From: build.sif
+
+%files
+    scripts/petsc.sh /opt/
+
+%post
+    # Add mpicc, etc to PATH:
+    export PATH=/opt/ompi/bin:$PATH
+
+    # Add env variables needed to silence Open MPI:
+    export OMPI_ALLOW_RUN_AS_ROOT=1
+    export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+
+    bash -e /opt/petsc.sh

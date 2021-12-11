@@ -1,0 +1,31 @@
+# Install parallel I/O libraries
+Bootstrap: localimage
+From: build.sif
+Stage: build
+
+%files
+    scripts/hdf5.sh /opt/
+    scripts/netcdf.sh /opt/
+    scripts/pnetcdf.sh /opt/
+    scripts/parallelio.sh /opt/
+
+%post
+    yum -y install zlib-devel
+
+    export PATH=/opt/ompi/bin:/opt/cmake/bin:$PATH
+    bash -e /opt/hdf5.sh
+    bash -e /opt/netcdf.sh
+    bash -e /opt/pnetcdf.sh
+    bash -e /opt/parallelio.sh
+
+Bootstrap: localimage
+From: openmpi.sif
+Stage: install
+
+%files from build
+    /opt/ /
+
+%post
+    yum clean all
+    rm -rf /var/cache/yum/*
+    rm -rf /opt/cmake

@@ -1,0 +1,61 @@
+Bootstrap: localimage
+From: io.sif
+Stage: io
+
+Bootstrap: localimage
+From: petsc.sif
+Stage: build
+
+%files from io
+    /opt/ /
+
+%files
+    scripts/udunits2.sh /opt/
+    scripts/pism.sh /opt/
+
+%post
+    # Install UDUNITS:
+    yum -y install expat-devel
+    bash -e /opt/udunits2.sh
+
+    # Install other prerequisites:
+    yum -y install \
+       fftw-devel \
+       gsl-devel \
+       ;
+
+    # Build PISM
+    export PATH=/opt/ompi/bin:/opt/cmake/bin:$PATH
+    /opt/pism.sh
+
+Bootstrap: localimage
+From: openmpi.sif
+Stage: install
+
+%environment
+    export PATH=/opt/ompi/bin:/opt/pism/bin:$PATH
+
+%files from build
+    /opt/ /
+
+%post
+    # Install runtime dependencies of PISM and UDUNITS:
+    yum -y install \
+       expat \
+       fftw \
+       gsl \
+       ;
+
+    # Clean up
+    yum clean all
+    rm -rf /var/cache/yum/*
+    rm /opt/*.sh /opt/*.c
+    rm -rf /opt/cmake
+    rm -rf /opt/petsc/share/petsc
+
+%runscript
+    /opt/pism/bin/pismr $*
+
+%help
+    PISM (Parallel Ice Sheet Model, www.pism.io) built with OpenMPI,
+    parallel NetCDF 4.7.4, HDF5 1.12.0, and PnetCDF 1.12.1
