@@ -24,12 +24,12 @@ CC=mpicc CXX=mpicxx cmake \
     -S ${build_dir} \
     -DCMAKE_CXX_FLAGS="-mavx2" \
     -DCMAKE_C_FLAGS="-mavx2" \
-    -DCMAKE_FIND_ROOT_PATH="/opt/hdf5/;/opt/netcdf/;/opt/pnetcdf;/opt/parallelio;/opt/udunits" \
+    -DCMAKE_FIND_ROOT_PATH="/opt/hdf5/;/opt/netcdf/;/opt/pnetcdf;/opt/parallelio;/opt/udunits;/opt/proj" \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DPism_USE_PARALLEL_NETCDF4=YES \
     -DPism_USE_PIO=YES \
     -DPism_USE_PNETCDF=YES \
-    -DPism_USE_PROJ=NO \
+    -DPism_USE_PROJ=YES \
     ;
 
 make -C ${build_dir}/build -j 8 install

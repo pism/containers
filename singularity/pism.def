@@ -11,12 +11,19 @@ Stage: build
 
 %files
     scripts/udunits2.sh /opt/
+    scripts/sqlite3.sh /opt/
+    scripts/proj.sh /opt/
     scripts/pism.sh /opt/
 
 %post
     # Install UDUNITS:
     yum -y install expat-devel
     bash -e /opt/udunits2.sh
+
+    # Install PROJ 6.0.0
+
+    bash -e /opt/sqlite3.sh
+    bash -e /opt/proj.sh
 
     # Install other prerequisites:
     yum -y install \
