@@ -19,9 +19,6 @@ We use (old!) CentOS 7 as the base Linux distribution because we
 currently need to use `glibc` that supports an ancient Linux kernel
 (2.6.32).
 
-PISM is build *without* PROJ support because its version in CentOS 7
-is too old and it is difficult to build from sources.
-
 To run PISM within this container, do one of:
 
 1. To run on one node:
