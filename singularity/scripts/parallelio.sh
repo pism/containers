@@ -8,6 +8,8 @@ set -u
 # PnetCDF installed in /opt/netcdf and /opt/pnetcdf. Uses
 # /var/tmp/build/parallelio as a build directory.
 
+MPICC=${MPICC:-mpicc}
+
 netcdf_prefix=${netcdf_prefix:-/opt/netcdf}
 pnetcdf_prefix=${pnetcdf_prefix:-/opt/pnetcdf}
 
@@ -26,7 +28,7 @@ popd
 
 pushd ${build_dir}/build
 
-CC=mpicc cmake \
+CC="${MPICC}" cmake \
   -DCMAKE_C_FLAGS="-fPIC" \
   -DCMAKE_INSTALL_PREFIX=${prefix} \
   -DNetCDF_PATH=${netcdf_prefix} \

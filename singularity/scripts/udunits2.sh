@@ -7,6 +7,8 @@ set -x
 # Install UDUNITS in /opt/udunits using /var/tmp/build/udunits as the build
 # directory.
 
+CC=${CC:-gcc}
+
 build_dir=${build_dir:-/var/tmp/build/udunits}
 prefix=${prefix:-/opt/udunits}
 
@@ -23,7 +25,7 @@ tar xzf udunits-${version}.tar.gz
 
 cd udunits-${version}
 
-./configure --prefix=${prefix}
+./configure CC="${CC}" --prefix=${prefix}
 
 make -j8 all
 make install

@@ -7,6 +7,8 @@ set -x
 # Install PnetCDF 1.12.1 in /opt/pnetcdf, using /var/tmp/build/pnetcdf as
 # the build directory.
 
+MPICC=${MPICC:-mpicc}
+
 version=1.12.1
 prefix=${prefix:-/opt/pnetcdf}
 build_dir=${build_dir:-/var/tmp/build/pnetcdf/}
@@ -21,7 +23,7 @@ tar xzf pnetcdf-${version}.tar.gz
 
 cd pnetcdf-${version}
 
-./configure \
+./configure CC="${MPICC}" \
       --prefix=${prefix} \
       --enable-shared \
       --disable-static \

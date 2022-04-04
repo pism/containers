@@ -7,6 +7,8 @@ set -x
 # Install HDF5 1.12.0 with parallel I/O in /opt/hdf5,
 # using /var/tmp/build/hdf5 as the build directory.
 
+MPICC=${MPICC:-mpicc}
+
 version=1.12.0
 prefix=${prefix:-/opt/hdf5}
 build_dir=${build_dir:-/var/tmp/build/hdf5}
@@ -23,7 +25,7 @@ tar xzf hdf5-${version}.tar.gz
 
 cd hdf5-${version}
 
-./configure CC=mpicc CFLAGS=-w \
+./configure CC="${MPICC}" CFLAGS=-w \
   --disable-static \
   --enable-parallel \
   --prefix=${prefix} 2>&1 | tee hdf5_configure.log

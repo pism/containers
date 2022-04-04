@@ -8,8 +8,8 @@ version=${version:-v2.0.2}
 opt_flags=${opt_flags:--mavx2}
 
 # Compilers:
-export CC=${CC:-mpicc}
-export CXX=${CXX:-mpicxx}
+export MPICC=${MPICC:-mpicc}
+export MPICXX=${MPICXX:-mpicxx}
 
 # Prerequisites:
 export PETSC_DIR=${PETSC_DIR:-/opt/petsc}
@@ -33,7 +33,7 @@ rm -rf build
 mkdir -p build
 popd
 
-cmake \
+CC="${MPICC}" CXX="${MPICXX}" cmake \
     -B ${build_dir}/build \
     -S ${build_dir} \
     -DCMAKE_CXX_FLAGS=${opt_flags} \

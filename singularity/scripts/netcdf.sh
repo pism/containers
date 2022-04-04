@@ -7,7 +7,7 @@ set -x
 # Install parallel NetCDF using parallel HDF5 in /opt/hdf5 and
 # /var/tmp/build/netcdf as the build directory.
 
-export CC=${CC:-mpicc}
+MPICC=${MPICC:-mpicc}
 
 hdf5_prefix=${hdf5_prefix:-/opt/hdf5}
 
@@ -26,7 +26,7 @@ tar zxf netcdf-c-${version}.tar.gz
 
 cd netcdf-c-${version}
 
-./configure CPPFLAGS=-I${hdf5_prefix}/include LDFLAGS=-L${hdf5_prefix}/lib \
+./configure CC="${MPICC}" CPPFLAGS=-I${hdf5_prefix}/include LDFLAGS=-L${hdf5_prefix}/lib \
         --enable-netcdf4 \
         --disable-dap \
         --prefix=${prefix} 2>&1 | tee netcdf_configure.log
