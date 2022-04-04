@@ -15,7 +15,7 @@ prefix=${prefix:-/opt/petsc}
 
 mkdir -p ${build_dir}
 cd ${build_dir}
-version=3.17.0
+version=3.16.5
 
 wget -nc \
      https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-${version}.tar.gz

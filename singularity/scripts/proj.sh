@@ -24,8 +24,10 @@ tar xzf proj-${version}.tar.gz
 
 cd proj-${version}
 
-PKG_CONFIG_PATH=${sqlite_prefix}/lib/pkgconfig:$PKG_CONFIG_PATH \
-               ./configure --prefix=${prefix}
+PKG_CONFIG_PATH=${PKG_CONFIG_PATH:-}
+export PKG_CONFIG_PATH=/opt/sqlite/lib/pkgconfig:${PKG_CONFIG_PATH}
+
+./configure --prefix=${prefix}
 
 make -j8 all
 make install
