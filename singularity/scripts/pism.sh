@@ -4,7 +4,7 @@ set -x
 set -e
 set -u
 
-version=${version:-v2.0.2}
+version=${version:-v2.0.4}
 opt_flags=${opt_flags:--mavx2}
 
 # Compilers:
@@ -28,7 +28,7 @@ mkdir -p ${build_dir}
 
 pushd ${build_dir}
 git clone https://github.com/pism/pism.git . || git pull
-git checkout ${version}
+git checkout -b version-${version} ${version}
 rm -rf build
 mkdir -p build
 popd
