@@ -46,4 +46,4 @@ CC="${MPICC}" CXX="${MPICXX}" cmake \
     -DPism_USE_PROJ=YES \
     ;
 
-make -C ${build_dir}/build -j 8 install
+make -C ${build_dir}/build -j 8 install/strip
