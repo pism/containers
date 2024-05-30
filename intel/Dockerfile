@@ -72,7 +72,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-FROM intel-devel as pism-prerequisite-libs
+FROM intel-devel as pism-devel
 
 RUN <<EOF
     echo "Install PISM's prerequisite tools and libraries (development)"
@@ -143,7 +143,7 @@ RUN <<EOF
     rm -rf /opt/petsc/share/petsc
 EOF
 
-from pism-prerequisite-libs as pism-build
+from pism-devel as pism
 
 COPY pism.sh /tmp
 RUN <<EOF
@@ -162,12 +162,12 @@ RUN <<EOF
     rm -rf /opt/pism/share/pism/examples
 EOF
 
-FROM pism-runtime as pism
+FROM pism-runtime as pism-container
 
-COPY --from=pism-prerequisite-libs /opt/hdf5 /opt/hdf5/
-COPY --from=pism-prerequisite-libs /opt/netcdf /opt/netcdf/
-COPY --from=pism-prerequisite-libs /opt/petsc /opt/petsc/
-COPY --from=pism-build /opt/pism /opt/pism/
+COPY --from=pism-devel /opt/hdf5 /opt/hdf5/
+COPY --from=pism-devel /opt/netcdf /opt/netcdf/
+COPY --from=pism-devel /opt/petsc /opt/petsc/
+COPY --from=pism /opt/pism /opt/pism/
 ENV PATH="/opt/hdf5/bin:/opt/netcdf/bin:/opt/petsc/bin:/opt/pism/bin:$PATH"
 
 RUN ln -s /opt/intel/oneapi/setvars.sh /etc/profile.d/02-intel-oneapi-setvars.sh
@@ -178,6 +178,7 @@ USER worker
 
 # Important parts of ". /opt/intel/oneapi/setvars.sh"
 ENV ONEAPI_ROOT=/opt/intel/oneapi
-ENV LD_LIBRARY_PATH=${ONEAPI_ROOT}/mpi/2021.12/opt/mpi/libfabric/lib:${ONEAPI_ROOT}/mpi/2021.12/lib:${ONEAPI_ROOT}/compiler/2024.1/opt/compiler/lib:${ONEAPI_ROOT}/compiler/2024.1/lib
+ENV LD_LIBRARY_PATH=${ONEAPI_ROOT}/tbb/2021.12/env/../lib/intel64/gcc4.8:${ONEAPI_ROOT}/mpi/2021.12/opt/mpi/libfabric/lib:${ONEAPI_ROOT}/mpi/2021.12/lib:${ONEAPI_ROOT}/mkl/2024.1/lib:${ONEAPI_ROOT}/compiler/2024.1/opt/compiler/lib:${ONEAPI_ROOT}/compiler/2024.1/lib:${ONEAPI_ROOT}/mpi/2021.12/opt/mpi/libfabric/lib:${ONEAPI_ROOT}/mpi/2021.12/lib:${ONEAPI_ROOT}/compiler/2024.1/opt/compiler/lib:${ONEAPI_ROOT}/compiler/2024.1/lib
 ENV I_MPI_ROOT=${ONEAPI_ROOT}/mpi/2021.12
 ENV FI_PROVIDER_PATH=${ONEAPI_ROOT}/mpi/2021.12/opt/mpi/libfabric/lib/prov:/usr/lib/x86_64-linux-gnu/libfabric
+ENV PATH=${ONEAPI_ROOT}/mpi/2021.12/bin:${ONEAPI_ROOT}/mkl/2024.1/bin/:${ONEAPI_ROOT}/compiler/2024.1/bin
