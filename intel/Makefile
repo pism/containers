@@ -1,7 +1,7 @@
 TAG=ckhrulev/pism-intel
 
 run: image
-	docker run --rm -it ${TAG} bash -l
+	docker run --rm -it ${TAG}
 
 image: Dockerfile
 	docker build -t ${TAG} --target pism -f $^ .
@@ -9,11 +9,8 @@ image: Dockerfile
 image-runtime: Dockerfile
 	docker build -t ${TAG}-runtime --target pism-runtime -f $^ .
 
-run-runtime: image-runtime
-	docker run --rm -it ${TAG}-runtime bash -l
+run-%: image-%
+	docker run --rm -it ${TAG}-$*
 
 image-devel: Dockerfile
 	docker build -t ${TAG}-devel --target pism-prerequisite-libs -f $^ .
-
-run-devel: image-devel
-	docker run --rm -it ${TAG}-devel bash -l

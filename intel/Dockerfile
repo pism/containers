@@ -171,3 +171,13 @@ COPY --from=pism-build /opt/pism /opt/pism/
 ENV PATH="/opt/hdf5/bin:/opt/netcdf/bin:/opt/petsc/bin:/opt/pism/bin:$PATH"
 
 RUN ln -s /opt/intel/oneapi/setvars.sh /etc/profile.d/02-intel-oneapi-setvars.sh
+
+# Add a non-privileged user
+RUN useradd --create-home --system --shell=/bin/false worker && usermod --lock worker
+USER worker
+
+# Important parts of ". /opt/intel/oneapi/setvars.sh"
+ENV ONEAPI_ROOT=/opt/intel/oneapi
+ENV LD_LIBRARY_PATH=${ONEAPI_ROOT}/mpi/2021.12/opt/mpi/libfabric/lib:${ONEAPI_ROOT}/mpi/2021.12/lib:${ONEAPI_ROOT}/compiler/2024.1/opt/compiler/lib:${ONEAPI_ROOT}/compiler/2024.1/lib
+ENV I_MPI_ROOT=${ONEAPI_ROOT}/mpi/2021.12
+ENV FI_PROVIDER_PATH=${ONEAPI_ROOT}/mpi/2021.12/opt/mpi/libfabric/lib/prov:/usr/lib/x86_64-linux-gnu/libfabric
