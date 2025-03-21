@@ -1,0 +1,21 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+%post
+    apt-get update
+
+    # PISM's runtime dependencies
+    apt-get install -y --no-install-recommends \
+    libfftw3-double3 \
+    libfyaml0 \
+    libgsl27 \
+    libnetcdf19t64 \
+    libopenmpi3t64 \
+    libsqlite3-0 \
+    libudunits2-0 \
+    openmpi-bin \
+    ""
+
+    # Clean up
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*

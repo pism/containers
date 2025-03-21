@@ -1,0 +1,30 @@
+Bootstrap: docker
+From: ubuntu:24.04
+Stage: build
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt-get update
+
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    cmake \
+    curl \
+    g++ \
+    git \
+    libfftw3-dev \
+    libfyaml-dev \
+    libgsl-dev \
+    libnetcdf-dev \
+    libopenmpi-dev \
+    libsqlite3-dev \
+    libtool \
+    libudunits2-dev \
+    make \
+    netcdf-bin \
+    openmpi-bin \
+    pkg-config \
+    python3 \
+    sqlite3 \
+    ""
