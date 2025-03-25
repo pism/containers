@@ -1,0 +1,29 @@
+Bootstrap: localimage
+From: prereq.sif
+Stage: build
+
+%files
+    proj.sh /opt/
+    petsc.sh /opt/
+    yac.sh /opt/
+
+%post
+    # Allow running MPI as root: YAXT's (and possibly YAC's configure
+    # script needs to run some tests)
+    #
+    # PETSc's "make check" needs to be able to run MPI code as well.
+    export OMPI_ALLOW_RUN_AS_ROOT=1
+    export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+
+    PREFIX=/opt/pism
+    BUILD=/tmp/build
+
+    rm -rf ${BUILD}    
+    prefix=${PREFIX} build_dir=${BUILD}/yac /opt/yac.sh
+    prefix=${PREFIX} build_dir=${BUILD}/proj /opt/proj.sh
+    prefix=${PREFIX} build_dir=${BUILD}/petsc /opt/petsc.sh
+
+    echo "Clean up"
+    rm -rf ${BUILD}
+    strip ${PREFIX}/lib/*.so
+    rm -rf ${PREFIX}/share/petsc/examples
