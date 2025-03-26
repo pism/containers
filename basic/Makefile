@@ -1,11 +1,11 @@
 
 ## This Makefile builds a Docker image for running PISM
 
-TAG ?= ckhrulev/pism-basic
+TAG = ckhrulev/pism-basic
 ## Set TAG to your preferred Docker tag. Ex: TAG=my/pism-custom make image
 
-pism_url ?= https://github.com/pism/pism.git
-pism_commit ?= dev
+pism_url = https://github.com/pism/pism.git
+pism_commit = dev
 
 image: Dockerfile ## Build the Docker image
 	docker build --build-arg pism_url=$(pism_url) --build-arg pism_commit=$(pism_commit) -t ${TAG} -f $^ .
