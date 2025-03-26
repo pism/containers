@@ -2,8 +2,9 @@
 
 lib_dir=${lib_dir:-/opt/pism}
 prefix=${prefix:-/opt/pism}
-version=${version:-v2.2.2}
 build_dir=${build_dir:-/tmp/build/pism}
+commit=${commit:-main}
+pism_url=${pism_url:-https://github.com/pism/pism.git}
 
 set -e
 set -u
@@ -15,9 +16,9 @@ rm -rf ${build_dir}
 mkdir -p ${build_dir}
 cd ${build_dir}
 
-git clone https://github.com/pism/pism.git pism-${version}
-cd pism-${version}
-git checkout -b branch-${version} ${version}
+git clone ${pism_url} pism-${commit}
+cd pism-${commit}
+git checkout -b branch-${commit} origin/${commit}
 
 cmake -B ${build_dir} -S . \
       -DCMAKE_CXX_FLAGS="${opt_flags}" \

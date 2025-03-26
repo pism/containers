@@ -1,0 +1,48 @@
+
+* Introduction
+
+This repository contains definition files and scripts needed to build PISM containers that can be used on some HPC systems.
+
+** Example
+
+To build and then run the default =Docker= container running =PISM=,
+
+#+BEGIN_SRC bash :exports both :results verbatim
+cd basic
+make image
+make run
+#+END_SRC
+
+To build a custom commit from a different PISM repository, edit the [[./basic/Makefile]] and set =TAG=, =pism_url= and =pism_commit=, then re-run =make image= and =make run=.
+
+The =make run= command drops your shell into a Docker container where you can run PISM as per the PISM manual. A better setup might be to mount a local folder into the Docker container so that PISM can access input and output files *outside the container* meaning they remain when the container exists. In the example below, we work in a local PISM source folder. The code here is not used (the PISM code is in the Docker image) but we use the =examples/std-greenland= folder from within the container.
+
+#+BEGIN_SRC bash :exports both :results verbatim
+docker run -it \
+       --user $(id -u):$(id -g) \
+       --mount type=bind,src=/path/to/pism-src-repository/,dst=/pism \
+       --entrypoint /bin/bash \
+       ckhrulev/pism-basic
+#+END_SRC
+
+In the command above,
++ =--user $(id -u):$(id -g)= sets the container user group and id equal to your non-container group and id so that the container can write files in mounted folders.
++ =--mount type=bind,src=/path/to/pism-src-repository/,dst=/pism= mounts a local folder at =/pism= inside the container. Adjust the =/path/to/pism-src-repository/= location to where you checked out PISM locally, assuming you want to access the =pism/examples/std-greenland= folder in the code below.
++ =ckhrulev/pism-basic= is the =TAG= set in [[./basic/Makefile]] and should be updated if you customized it there.
+
+Once you are inside the Docker container, you can run PISM per the PISM documentation:
+
+#+BEGIN_SRC bash :exports both :results verbatim
+cd /pism/examples/std-greenland
+./spinup.sh 4 const 10000 20 sia g20km_10ka.nc
+#+END_SRC
+
+Finally, rather than manually running multiple commands as above, it may be preferable to run PISM from outside the container.
+
+#+BEGIN_SRC bash :exports both :results verbatim
+docker run -it \
+       --user $(id -u):$(id -g) \
+       --mount type=bind,src=/path/to/pism-src-repository/,dst=/pism \
+       ckhrulev/pism-basic \
+       bash -c "cd /pism/examples/std-greenland; ./spinup.sh 4 const 10000 20 sia g20km_10ka.nc"
+#+END_SRC
