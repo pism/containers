@@ -88,6 +88,10 @@ run <<EOF
 EOF
 
 copy pism.sh /tmp/
+arg pism_url
+env pism_url=${pism_url}
+arg pism_commit
+env pism_commit=${pism_commit}
 run <<EOF
     echo "Install PISM"
 
@@ -95,7 +99,7 @@ run <<EOF
     set -u
     set -x
 
-    prefix=${PISM_PREFIX} build_dir=/tmp/build/pism lib_dir=${PISM_PREFIX} version=31fabd4f /tmp/pism.sh
+    prefix=${PISM_PREFIX} build_dir=/tmp/build/pism lib_dir=${PISM_PREFIX} commit=${pism_commit} /tmp/pism.sh
 EOF
 
 run <<EOF
