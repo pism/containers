@@ -36,3 +36,13 @@ Once you are inside the Docker container, you can run PISM per the PISM document
 cd /pism/examples/std-greenland
 ./spinup.sh 4 const 10000 20 sia g20km_10ka.nc
 #+END_SRC
+
+Finally, rather than manually running multiple commands as above, it may be preferable to run PISM from outside the container.
+
+#+BEGIN_SRC bash :exports both :results verbatim
+docker run -it \
+       --user $(id -u):$(id -g) \
+       --mount type=bind,src=/path/to/pism-src-repository/,dst=/pism \
+       ckhrulev/pism-basic \
+       bash -c "cd /pism/examples/std-greenland; ./spinup.sh 4 const 10000 20 sia g20km_10ka.nc"
+#+END_SRC
