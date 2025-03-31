@@ -16,9 +16,9 @@ rm -rf ${build_dir}
 mkdir -p ${build_dir}
 cd ${build_dir}
 
-git clone ${pism_url} pism-${commit}
-cd pism-${commit}
-git checkout -b branch-${commit} origin/${commit}
+git clone ${pism_url} pism-source
+cd pism-source
+git checkout -b branch-${commit} ${commit}
 
 cmake -B ${build_dir} -S . \
       -DCMAKE_CXX_FLAGS="${opt_flags}" \
