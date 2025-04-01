@@ -21,7 +21,7 @@ pism-prereq.sif: pism-prereq.def prereq.sif
 pism-v2.2.2.sif:
 
 pism-%.sif: pism.def pism-prereq.sif runtime.sif ## Build a SIF file (Singularity HPC)
-	apptainer build -F --build-arg pism_version="$*" $@ pism.def
+	apptainer build -F --build-arg pism_commit="$*" $@ pism.def
 
 runtime.sif:
 prereq.sif:

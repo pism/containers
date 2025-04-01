@@ -3,7 +3,7 @@ From: pism-prereq.sif
 Stage: build
 
 %arguments
-    pism_version=""
+    pism_commit=""
 
 %files
     pism.sh /opt/
@@ -14,7 +14,7 @@ Stage: build
     BUILD=/tmp/build
 
     rm -rf ${BUILD}    
-    prefix=${PREFIX} build_dir=${BUILD}/pism lib_dir=${PREFIX} version={{ pism_version }} /opt/pism.sh
+    prefix=${PREFIX} build_dir=${BUILD}/pism lib_dir=${PREFIX} commit={{ pism_commit }} /opt/pism.sh
 
     echo "Clean up"
     rm -rf ${BUILD}
