@@ -1,17 +1,15 @@
 #!/bin/bash
 
+. /opt/intel/oneapi/setvars.sh
+
 set -u
 set -e
 set -x
 
-# Install parallel NetCDF using parallel HDF5 in /opt/hdf5 and
-# /var/tmp/build/netcdf as the build directory.
+# Install parallel NetCDF using parallel HDF5 in $hdf5_prefix and
+# /var/tmp/build/netcdf as a build directory.
 
-MPICC=${MPICC:-mpicc}
-
-hdf5_prefix=${hdf5_prefix:-/opt/hdf5}
-
-version=4.7.4
+version=4.9.3
 prefix=${prefix:-/opt/netcdf}
 build_dir=${build_dir:-/var/tmp/build/netcdf}
 url=https://github.com/Unidata/netcdf-c/archive/refs/tags/v${version}.tar.gz
@@ -20,16 +18,21 @@ mkdir -p ${build_dir}
 cd ${build_dir}
 
 wget -nc ${url}
-
-rm -rf netcdf-c-${version}
 tar zxf v${version}.tar.gz
 
 cd netcdf-c-${version}
 
-./configure CC="${MPICC}" CPPFLAGS=-I${hdf5_prefix}/include LDFLAGS=-L${hdf5_prefix}/lib \
-        --enable-netcdf4 \
-        --disable-dap \
-        --prefix=${prefix} 2>&1 | tee netcdf_configure.log
+export CPPFLAGS="-I${hdf5_prefix}/include"
+export LDFLAGS="-L${hdf5_prefix}/lib"
+export CC=${CC:-mpiicx}
+
+./configure \
+  --enable-netcdf4 \
+  --enable-parallel4 \
+  --disable-dap \
+  --disable-libxml2 \
+  --disable-byterange \
+  --prefix=${prefix} 2>&1 | tee netcdf_configure.log
 
 make all 2>&1 | tee netcdf_compile.log
 make install 2>&1 | tee netcdf_install.log

@@ -1,8 +1,8 @@
-FROM ubuntu:22.04 as intel-runtime
+FROM ubuntu:24.04 AS intel-runtime
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN <<EOF
-    echo "Set up the repository"
+    echo "Set up the Intel oneAPI repository"
 
     set -x
     set -e
@@ -11,7 +11,7 @@ RUN <<EOF
     apt-get update
     apt-get install -y --no-install-recommends wget gpg sudo ca-certificates
 
-# See https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2024-1/apt.html
+# See https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2025-0/apt-005.html
 #
 # download the key to system keyring
     wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
@@ -26,88 +26,97 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-#
 RUN <<EOF
-    echo "Install Intel's MPI and runtime libraries"
+    echo "Install required Intel oneAPI packages (runtime)"
     apt-get update
 
     apt-get install -y --no-install-recommends \
-    intel-oneapi-compiler-shared-runtime-2024.1 \
-    intel-oneapi-mkl-core-2024.1 \
-    intel-oneapi-mpi-2021.12 \
+    intel-oneapi-compiler-shared-runtime-2025.3 \
+    intel-oneapi-compiler-fortran-runtime-2025.3 \
+    intel-oneapi-mkl-core-2025.3 \
+    intel-oneapi-mpi-2021.17 \
     ""
 
     rm -rf /var/lib/apt/lists/*
 EOF
 
-FROM intel-runtime as pism-runtime
+FROM intel-runtime AS pism-runtime
 
 RUN <<EOF
-    echo "Install PISM's prerequisite tools and libraries"
+    echo "Install PISM's runtime dependencies (ones from packages)"
     apt-get update
 
     apt-get install -y --no-install-recommends \
-    libfftw3-3 \
+    libfftw3-double3 \
     libgsl27 \
-    libproj22 \
+    libproj25 \
     libudunits2-0 \
+    libfyaml0 \
     ""
 
     rm -rf /var/lib/apt/lists/*
 EOF
 
-FROM pism-runtime as intel-devel
+FROM pism-runtime AS intel-devel
 
 RUN <<EOF
-    echo "Install required oneAPI packages (development)"
+    echo "Install required Intel oneAPI packages (development)"
 
     apt-get update
 
     apt-get install -y --no-install-recommends \
-    intel-oneapi-compiler-dpcpp-cpp-2024.1 \
-    intel-oneapi-mkl-core-devel-2024.1 \
-    intel-oneapi-mpi-devel-2021.12 \
+    intel-oneapi-compiler-dpcpp-cpp-2025.3 \
+    intel-oneapi-compiler-fortran-2025.3 \
+    intel-oneapi-mkl-core-devel-2025.3 \
+    intel-oneapi-mpi-devel-2021.17 \
     ""
 
     rm -rf /var/lib/apt/lists/*
 EOF
 
-FROM intel-devel as pism-devel
+FROM intel-devel AS pism-devel
 
 RUN <<EOF
-    echo "Install PISM's prerequisite tools and libraries (development)"
+    echo "Install PISM's build tools and build dependencies"
     apt-get update
 
     apt-get install -y --no-install-recommends \
+    autoconf \
+    automake \
     cmake \
+    coreutils \
+    git \
     libfftw3-dev \
+    libfyaml-dev \
     libgsl-dev \
     libproj-dev \
+    libtool \
     libudunits2-dev \
     m4 \
     make \
     pkg-config \
     python3 \
+    ssh \
     ""
 
     rm -rf /var/lib/apt/lists/*
 EOF
 
 # See
-# https://www.intel.com/content/www/us/en/docs/oneapi/programming-guide/2024-1/use-the-setvars-and-oneapi-vars-scripts-with-linux.html
+# https://www.intel.com/content/www/us/en/docs/oneapi/programming-guide/2025-1/use-the-setvars-and-oneapi-vars-scripts-with-linux.html
 #
 # for the right way to initialize Intel oneAPI.
 
 COPY hdf5.sh /tmp/
 RUN <<EOF
     echo "Install HDF5"
-    . /opt/intel/oneapi/setvars.sh
 
     set -eux
-    export MPICC=mpiicx
     export build_dir=/var/tmp/build/hdf5
+    export prefix=/opt/hdf5
 
-    /tmp/hdf5.sh
+    bash /tmp/hdf5.sh
+
     rm -rf ${build_dir}
     rm -rf /opt/hdf5/share/hdf5_examples
 EOF
@@ -115,59 +124,76 @@ EOF
 COPY netcdf.sh /tmp/
 RUN <<EOF
     echo "Install NetCDF"
-    . /opt/intel/oneapi/setvars.sh
 
     set -eux
-    export MPICC=mpiicx
+    export hdf5_prefix=/opt/hdf5
     export build_dir=/var/tmp/build/netcdf
+    export prefix=/opt/netcdf
 
-    /tmp/netcdf.sh
+    bash /tmp/netcdf.sh
     rm -rf ${build_dir}
+EOF
+
+COPY yaxt.sh /tmp/
+RUN <<EOF
+    echo "Install YAXT"
+
+    set -eux
+    bash /tmp/yaxt.sh
+
+    rm -rf /var/tmp/build/yaxt
+EOF
+
+COPY yac.sh /tmp/
+RUN <<EOF
+    echo "Install YAC"
+
+    set -eux
+    bash /tmp/yac.sh
+
+    rm -rf /var/tmp/build/yac
 EOF
 
 COPY petsc.sh /tmp/
 RUN <<EOF
     echo "Install PETSc"
-    . /opt/intel/oneapi/setvars.sh
 
     set -eux
-    export MPICC=mpiicx
-    export MPICXX=mpiicpx
     export build_dir=/var/tmp/build/petsc
-    export COPTFLAGS="-O3 -fp-model=precise -march=native -mtune=native"
-    export version=3.19.6
+    export prefix=/opt/petsc
 
-    /tmp/petsc.sh
+    bash /tmp/petsc.sh
 
     rm -rf ${build_dir}
     rm -rf /opt/petsc/share/petsc
 EOF
 
-from pism-devel as pism
-
-COPY pism.sh /tmp
+COPY pism.sh /tmp/
 RUN <<EOF
     echo "Install PISM"
-    . /opt/intel/oneapi/setvars.sh
 
     set -eux
-    export MPICC=mpiicx
-    export MPICXX=mpiicpx
     export build_dir=/var/tmp/build/pism
-    export opt_flags="-O3 -fp-model=precise -march=native -mtune=native -fimf-use-svml"
+    export prefix=/opt/pism
 
-    /tmp/pism.sh
+    bash /tmp/pism.sh
+
     rm -rf ${build_dir}
-    rm -rf /opt/pism/include/pism
-    rm -rf /opt/pism/share/pism/examples
+    rm -rf ${prefix}/include ${prefix}/share/doc/pism
 EOF
 
-FROM pism-runtime as pism-container
+FROM pism-runtime AS pism-container
 
+# copy PISM's runtime dependencies that were built from sources:
 COPY --from=pism-devel /opt/hdf5 /opt/hdf5/
 COPY --from=pism-devel /opt/netcdf /opt/netcdf/
 COPY --from=pism-devel /opt/petsc /opt/petsc/
-COPY --from=pism /opt/pism /opt/pism/
+COPY --from=pism-devel /opt/pism /opt/pism/
+COPY --from=pism-devel /opt/yac /opt/yac/
+COPY --from=pism-devel /opt/yaxt /opt/yaxt/
+
+ENV PETSC_DIR="/opt/petsc"
+
 ENV PATH="/opt/hdf5/bin:/opt/netcdf/bin:/opt/petsc/bin:/opt/pism/bin:$PATH"
 
 RUN ln -s /opt/intel/oneapi/setvars.sh /etc/profile.d/02-intel-oneapi-setvars.sh
@@ -178,7 +204,7 @@ USER worker
 
 # Important parts of ". /opt/intel/oneapi/setvars.sh"
 ENV ONEAPI_ROOT=/opt/intel/oneapi
-ENV LD_LIBRARY_PATH=${ONEAPI_ROOT}/tbb/2021.12/env/../lib/intel64/gcc4.8:${ONEAPI_ROOT}/mpi/2021.12/opt/mpi/libfabric/lib:${ONEAPI_ROOT}/mpi/2021.12/lib:${ONEAPI_ROOT}/mkl/2024.1/lib:${ONEAPI_ROOT}/compiler/2024.1/opt/compiler/lib:${ONEAPI_ROOT}/compiler/2024.1/lib:${ONEAPI_ROOT}/mpi/2021.12/opt/mpi/libfabric/lib:${ONEAPI_ROOT}/mpi/2021.12/lib:${ONEAPI_ROOT}/compiler/2024.1/opt/compiler/lib:${ONEAPI_ROOT}/compiler/2024.1/lib
-ENV I_MPI_ROOT=${ONEAPI_ROOT}/mpi/2021.12
-ENV FI_PROVIDER_PATH=${ONEAPI_ROOT}/mpi/2021.12/opt/mpi/libfabric/lib/prov:/usr/lib/x86_64-linux-gnu/libfabric
-ENV PATH=${ONEAPI_ROOT}/mpi/2021.12/bin:${ONEAPI_ROOT}/mkl/2024.1/bin/:${ONEAPI_ROOT}/compiler/2024.1/bin
+ENV LD_LIBRARY_PATH=${ONEAPI_ROOT}/tbb/2021.17/env/../lib/intel64/gcc4.8:${ONEAPI_ROOT}/mpi/2021.17/opt/mpi/libfabric/lib:${ONEAPI_ROOT}/mpi/2021.17/lib:${ONEAPI_ROOT}/mkl/2025.3/lib:${ONEAPI_ROOT}/compiler/2025.3/opt/compiler/lib:${ONEAPI_ROOT}/compiler/2025.3/lib:${ONEAPI_ROOT}/mpi/2021.17/opt/mpi/libfabric/lib:${ONEAPI_ROOT}/mpi/2021.17/lib:${ONEAPI_ROOT}/compiler/2025.3/opt/compiler/lib:${ONEAPI_ROOT}/compiler/2025.3/lib
+ENV I_MPI_ROOT=${ONEAPI_ROOT}/mpi/2021.17
+ENV FI_PROVIDER_PATH=${ONEAPI_ROOT}/mpi/2021.17/opt/mpi/libfabric/lib/prov:/usr/lib/x86_64-linux-gnu/libfabric
+ENV PATH=${ONEAPI_ROOT}/mpi/2021.17/bin:${ONEAPI_ROOT}/mkl/2025.3/bin/:${ONEAPI_ROOT}/compiler/2025.3/bin:${PATH}
