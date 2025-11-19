@@ -17,7 +17,6 @@ run <<EOF
     # gfortran is needed to build YAXT and YAC
     # libfyaml is used by YAC
     # OpenMPI, FFTW, GSL, UDUNITS, NetCDF are used by PISM
-    # Sqlite3 is used by PROJ, which is used by PISM
     # git is used to get sources
     apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -30,9 +29,9 @@ run <<EOF
     libgsl-dev \
     libnetcdf-dev \
     libopenmpi-dev \
-    libsqlite3-dev \
     libtool \
     libudunits2-dev \
+    libproj-dev \
     make \
     netcdf-bin \
     openmpi-bin \
@@ -59,17 +58,6 @@ run <<EOF
     export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 
     prefix=${PISM_PREFIX} build_dir=/tmp/build/yac /tmp/yac.sh
-EOF
-
-copy proj.sh /tmp/
-run <<EOF
-    echo "Install PROJ"
-
-    set -e
-    set -u
-    set -x
-
-    prefix=${PISM_PREFIX} /tmp/proj.sh
 EOF
 
 copy petsc.sh /tmp/
@@ -132,7 +120,7 @@ run <<EOF
     libgsl27 \
     libnetcdf19t64 \
     libopenmpi3t64 \
-    libsqlite3-0 \
+    libproj25 \
     libudunits2-0 \
     openmpi-bin \
     ""
